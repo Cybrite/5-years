@@ -5,14 +5,37 @@ import ReactMarkdown from "react-markdown";
 import { Copy } from "lucide-react";
 import { motion } from "framer-motion";
 
+type ExplainMode = "kid" | "normal" | "genz";
+
+type ModeOption = {
+  value: ExplainMode;
+  label: string;
+};
+
+const MODE_OPTIONS: ModeOption[] = [
+  { value: "kid", label: "👶 Kid Mode" },
+  { value: "normal", label: "🧠 Normal" },
+  { value: "genz", label: "💀 Gen Z Chaos" },
+];
+
+const EXAMPLES = [
+  "Blockchain",
+  "Black Holes",
+  "Quantum Physics",
+  "Artificial Intelligence",
+];
+
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [mode, setMode] = useState<ExplainMode>("kid");
 
   const explain = async () => {
-    if (!topic) return;
+    const trimmedTopic = topic.trim();
+
+    if (!trimmedTopic) return;
 
     setLoading(true);
     setResult("");
@@ -23,50 +46,61 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic: trimmedTopic, mode }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
 
       const data = await res.json();
 
       if (data.explanation) {
         setResult(data.explanation);
       } else {
-        setResult("Error: " + data.error);
+        setResult("Error: " + (data.error ?? "Unknown error"));
       }
     } catch {
       setResult("Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  const copyText = () => {
-    navigator.clipboard.writeText(result);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+  const copyText = async () => {
+    if (!result) return;
 
-  const examples = [
-    "Blockchain",
-    "Black Holes",
-    "Quantum Physics",
-    "Artificial Intelligence",
-    "Epstien files"
-  ];
+    try {
+      await navigator.clipboard.writeText(result);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-white text-gray-900 px-6 py-16 flex flex-col items-center">
-      
-      {/* Header */}
       <h1 className="text-4xl font-semibold tracking-tight mb-2">
         Explain Like I'm 5
       </h1>
 
-      <p className="text-gray-500 mb-10">
-        Complex topics explained simply.
-      </p>
+      <p className="text-gray-500 mb-6">Complex topics explained simply.</p>
 
-      {/* Input */}
+      <div className="flex gap-2 mb-8">
+        {MODE_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => setMode(option.value)}
+            className={`px-3 py-1 rounded-full border ${
+              mode === option.value ? "bg-black text-white" : "border-gray-300"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
       <div className="w-full max-w-2xl flex gap-3">
         <input
           value={topic}
@@ -84,9 +118,8 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Example Topics */}
       <div className="flex gap-3 mt-6 flex-wrap justify-center">
-        {examples.map((ex) => (
+        {EXAMPLES.map((ex) => (
           <button
             key={ex}
             onClick={() => setTopic(ex)}
@@ -97,7 +130,6 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Result */}
       {result && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}

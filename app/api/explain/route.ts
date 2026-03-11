@@ -8,43 +8,51 @@ const client = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { topic } = await req.json();
+    const { topic, mode } = await req.json();
+
+    let systemPrompt = "";
+
+    if (mode === "kid") {
+      systemPrompt = `
+Explain the topic like you're talking to a 5-year-old.
+Use very simple words and a fun analogy.
+Keep it short and friendly.
+`;
+    }
+
+    if (mode === "normal") {
+      systemPrompt = `
+Explain the topic clearly and simply for a general audience.
+Avoid slang.
+Use an example to help understanding.
+`;
+    }
+
+    if (mode === "genz") {
+      systemPrompt = `
+Explain the topic using chaotic Gen Z humor.
+
+Rules:
+- Use slang like bro, fr, lowkey, highkey, no cap
+- Make it funny
+- Add a ridiculous analogy
+- Still explain the concept correctly
+`;
+    }
 
     const completion = await client.chat.completions.create({
-  model: "openai/gpt-oss-20b",
-  messages: [
-    {
-      role: "system",
-      content: `
-      You explain complex topics like you're talking to a 5-year-old but with funny Gen-Z humor.
-
-      Rules:
-      - Use simple words
-      - Use Gen Z slang (like: bro, fr, lowkey, highkey, no cap, brain go brr, etc.)
-      - Make it funny but still educational
-      - Include a silly analogy
-      - Keep it short (3–5 sentences)
-
-      Example style:
-      "Okay imagine the internet is like a giant group chat. Blockchain is like when the chat keeps a permanent screenshot of every message so nobody can edit their cringe texts later. No cap."
-      `
-    },
-    {
-      role: "user",
-      content: topic
-    }
-  ],
-  temperature: 1
-});
+      model: "openai/gpt-oss-20b",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: topic },
+      ],
+      temperature: 1,
+    });
 
     return NextResponse.json({
       explanation: completion.choices[0].message.content,
     });
   } catch (error: any) {
-    console.error("Groq error:", error);
-
-    return NextResponse.json({
-      error: error.message,
-    });
+    return NextResponse.json({ error: error.message });
   }
 }
