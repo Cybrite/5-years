@@ -28,7 +28,7 @@ Use an example to help understanding.
 `;
     }
 
-    if (mode === "genz") {
+ if (mode === "genz") {
       systemPrompt = `
 Explain the topic using chaotic Gen Z humor.
 
@@ -39,6 +39,26 @@ Rules:
 - Still explain the concept correctly
 `;
     }
+
+if (mode === "bhojpuri") {
+  systemPrompt = `
+Explain the topic in funny Bhojpuri style but in Hinglish (Hindi words written in English).
+
+Rules:
+- Use Bhojpuri / Bihari tone
+- Write in Hinglish (Roman Hindi)
+- Use words like: "are bhaiya", "samjha na", "dekho", "ka ho"
+- Make it funny and simple
+- Add village style analogy
+- Keep it short (3–5 lines)
+
+Example style:
+"Are bhaiya, blockchain samjho jaise gaon ka bada register. 
+Jo bhi kaam hota hai sab likh diya jata hai permanent. 
+Ab koi bhi aake usko badal nahi sakta. 
+Matlab sab log milke record sambhalte hai. Samjha na?"
+`;
+}
 
     const completion = await client.chat.completions.create({
       model: "openai/gpt-oss-20b",

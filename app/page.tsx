@@ -16,6 +16,7 @@ const MODE_OPTIONS: ModeOption[] = [
   { value: "kid", label: "👶 Kid Mode" },
   { value: "normal", label: "🧠 Normal" },
   { value: "genz", label: "💀 Gen Z Chaos" },
+  { value: "bhojpuri", label: "🐃 Bhojpuri Mode" },
 ];
 
 const EXAMPLES = [
@@ -82,7 +83,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white text-gray-900 px-6 py-16 flex flex-col items-center">
       <h1 className="text-4xl font-semibold tracking-tight mb-2">
-        Explain Like I'm 5
+        Explain it to me
       </h1>
 
       <p className="text-gray-500 mb-6">Complex topics explained simply.</p>
